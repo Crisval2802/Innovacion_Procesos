@@ -1,0 +1,29 @@
+
+
+.Contenedor_informacion{
+    width:100vw;
+
+    background-color: white;
+    float: right;
+}
+
+.Contenedor_triple{
+    width:30vw;
+    margin-left: 2vw;
+    min-height: 82vh;
+    max-height: 82vh;
+    background-color: rgb(0, 0, 0);
+    border-radius: 50px;
+}
+
+.img{
+    width:20vw;
+    margin-left: 5vw;
+
+    background-color: rgb(0, 0, 0);
+    border-radius: 50px;
+}
+
+
+
+

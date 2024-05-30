@@ -1,0 +1,118 @@
+{% extends 'layouts/navbar.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/usuario.css' %}">
+
+<body>
+    <div class="page" >
+        <div class="contenido">
+            <form method="POST" action="{% url 'cambiar_usuario' %}">
+                {% csrf_token %}
+                <br>
+                <br>
+                <div style="margin-left:5%;">
+                    <label for="usuario" style="font-size: 25px;"> Usuario</label> 
+                    
+                    <br>
+                    <br>
+                    
+                    <input name="usuario" class="input" type="text" value="{{usuario}}" required>
+                    
+                    <br>
+                    <br>
+                    
+                    <label for="email"  style="font-size: 25px;"> Correo electronico</label> 
+                    
+                    <br>
+                    <br>
+                    
+                    <input name="email" class="input" type="email" value="{{correo}}" required>
+                    
+                    <br>
+                    <br>
+                    
+                    
+                    
+                    <button id="guardar" style="color: white; background-color: black; padding: 5px 10px; border-radius: 20px; margin-top: 10px; font-size: 25px;" >Guardar Cambios</button>
+                    
+                    <br>
+                    <br>
+                    
+                    {% if Error %}
+                    <center>
+                        <div class="alerta fracaso" style="margin-right: 5%;" >
+                            {{Error}}
+                        </div>
+                    </center>
+                    
+                    {% endif %}
+
+
+                    {% if Exito %}
+                    <center>
+                        <div class="alerta exito" style="margin-right: 5%;">
+                            {{Exito}}
+                        </div>
+                    </center>
+                    {% endif %}
+
+
+
+                </div>
+            </form>
+        </div>
+
+
+
+        <div class="cambiar_contra">
+            <br>
+            <br>
+
+            <form method="POST" action="{% url 'cambiar_contra' %}">
+                {% csrf_token %}
+                <div style="margin-left:5%;">
+                    
+                    <label for="contra" style="font-size: 25px;">Actualizar contraseña</label> 
+                                
+                    <br>
+                    <br>
+                    
+                    <input name="contra" id="contra" class="input" type="password" required>
+                    
+                    <button type="button" style="background-color: white; border-radius: 20px; " onclick="mostrar_contra()"><img img src="{% static 'images/mostrar_contra.png' %}" alt="Home" style="width: 50px; border-radius: 40px;"></button>
+                    <br>
+                    <br>
+            
+                    <button id="guardar" style="color: white; background-color: black; padding: 5px 10px; border-radius: 20px; margin-top: 10px; font-size: 25px;" >Cambiar contraseña</button>
+                    
+                    <br>
+                    <br>
+                    {% if Exito_contra %}
+                    <center>
+                        <div class="alerta exito" style="margin-right: 5%;">
+                            {{Exito_contra}}
+                        </div>
+                    </center>
+                    {% endif %}
+                </div>
+            <form>
+
+        </div>
+    </div>
+
+    
+</body>
+
+<script>
+    function mostrar_contra() {
+        var input = document.getElementById("contra");
+        if (input.type=="text"){
+            input.type="password";
+        }else{
+            input.type="text";
+        }
+
+    }
+</script>
+{% endblock %}

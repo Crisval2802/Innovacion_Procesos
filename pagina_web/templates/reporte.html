@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resumen de IVA - Reporte</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #f9f9f9;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+    }
+    h1 {
+        text-align: center;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    .total {
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Reporte de {{tipo}} del dia {{fecha}}</h1>
+    <h2> {{cliente.nombre}} {{cliente.apellido}} | RFC: {{cliente.rfc}}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Emisor</th>
+                <th>Receptor</th>
+                <th>Folio</th>
+                <th>Subtotal</th>
+                <th>IVA</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+
+
+        <tbody>
+            {% for item in datos %}
+                <tr>
+                    <td>{{item.fecha}}</td>
+                    <td>{{item.emisor}}</td>
+                    <td>{{item.receptor}}</td>
+                    <td>{{item.folio}}</td>
+                    <td>${{item.subtotal}}</td>
+                    <td>${{item.iva}}</td>
+                    <td>${{item.total}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="total">
+                
+                <td colspan="4">Totales:</td>
+                <td>${{subtotal}}</td>
+                <td>${{total_iva}}</td>
+                <td>${{total}}</td>
+            </tr>
+        </tfoot>
+    </table>
+    <p>Este es un reporte generado a partir de la información de los archivos XML cargados en el sistema.</p>
+</div>
+</body>
+</html>

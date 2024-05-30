@@ -1,0 +1,87 @@
+{% extends 'layouts/nav_login.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    .input{
+        margin-bottom: 10px;
+        width: 80%;
+        min-height: 30px;
+        border-radius: 35px;
+        padding:5px;
+        font-size: 15px;
+    }
+</style>
+
+
+<form method="POST" action="{% url 'registro' %}">
+    {% csrf_token %}
+    <div style="background:#D1D1D1; width: 38vw; border-radius: 40px; min-height: 68vh; margin-left: 4vw; text-align: center;">
+        <img style="margin-top: 3%; width:20%;" src="{% static 'images/usuario.png' %}">
+        
+        <br>
+        <br>
+        <input name="usuario" class="input" type="text"  placeholder="USUARIO" required>
+
+        <br>
+        <br>
+        <input name="email" class="input" type="email" placeholder="CORREO ELECTRONICO" required>
+
+        <br>
+        <br>
+        <input name="contra" id="contra" class="input" type="password" placeholder="CONTRASEÑA" onchange="validar_contras()" required>
+
+        <br>
+        <br>
+        <input name="confirmar_contra" id="confirmar_contra" class="input" type="password" placeholder="CONFIRMAR CONTRASEÑA" onchange="validar_contras()" required>
+        <br>
+        <br>
+        {% if datos.Error %}
+			<div class="alert alert-danger" role="alert" style="width: 80%; margin-left: 10%;">
+				{{datos.Error}}
+			</div>
+		{% endif %}
+
+
+        {% if datos.Exito %}
+			<div class="alert alert-success" role="alert" style="width: 80%; margin-left: 10%;">
+				{{datos.Exito}}
+			</div>
+		{% endif %}
+
+
+        <div hidden class="alert alert-danger" role="alert" id="error_contras" style="width: 80%; margin-left: 10%;">
+            Las contraseñas no coinciden
+        </div>
+
+
+    </div>
+        
+    <button name="entrar" id="entrar" style="background:#D1D1D1; width: 16vw; 
+                    border-top-left-radius: 0px;
+                    border-top-right-radius: 0px;
+                    border-bottom-left-radius: 50px;
+                    border-bottom-right-radius: 50px;
+                    min-height: 10vh; margin-left: 15vw; text-align: center;
+                    font-size: 30px;">Registrarse</button>
+</form>
+
+
+<script>
+    function validar_contras(){
+		contra = document.getElementById('contra').value;
+		confirmar_contra = document.getElementById('confirmar_contra').value;
+		if(contra!=confirmar_contra){
+		 	document.getElementById('error_contras').hidden=false;
+			var boton = document.getElementById('entrar');
+			boton.disabled=true;
+		}else{
+			document.getElementById('error_contras').hidden=true;
+			var boton = document.getElementById('entrar');
+			boton.disabled=false;
+		}
+	}
+</script>
+
+
+{% endblock %}

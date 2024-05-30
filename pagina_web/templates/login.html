@@ -1,0 +1,53 @@
+{% extends 'layouts/nav_login.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    .input{
+        margin-bottom: 10px;
+        width: 80%;
+        min-height: 40px;
+        border-radius: 35px;
+        padding:5px;
+        font-size: 20px;
+    }
+</style>
+
+
+<form method="POST" action="{% url 'login' %}">
+    {% csrf_token %}
+    <div style="background:#D4CCCC; width: 38vw; border-radius: 40px; min-height: 65vh; margin-left: 4vw; text-align: center;">
+        <img style="margin-top: 3%; width:30%;" src="{% static 'images/usuario.png' %}">
+        <br>
+        <br>
+        <input class="input" name="usuario" type="text"  placeholder="USUARIO" required>
+        <br>
+        <br>
+        <input class="input" name="contra" type="password" placeholder="CONTRASEÑA" required>
+        <br>
+        <br>
+        <a style="float: right; margin-right: 10%; color:rgb(88, 85, 85)" href="{% url 'password_reset' %}">RECUPERAR CONTRASEÑA</a>
+
+        <br>
+        <br>
+        {% if datos.Error %}
+			<div class="alert alert-danger" role="alert" style="width: 80%; margin-left: 10%;">
+				{{datos.Error}}
+			</div>
+		{% endif %}
+    </div>
+
+    <button style="background:#D4CCCC; width: 16vw; 
+                    border-top-left-radius: 0px;
+                    border-top-right-radius: 0px;
+                    border-bottom-left-radius: 50px;
+                    border-bottom-right-radius: 50px;
+                    min-height: 10vh; margin-left: 15vw; text-align: center;
+                    font-size: 30px;">Iniciar sesion</button>
+    
+
+</form>
+
+
+
+{% endblock %}

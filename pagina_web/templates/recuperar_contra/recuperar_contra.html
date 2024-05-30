@@ -1,0 +1,48 @@
+{% extends 'layouts/nav_login.html' %}
+{% load static %}
+{% block content %}
+
+
+<style>
+    input{
+        margin-bottom: 10px;
+        width: 80%;
+        min-height: 40px;
+        border-radius: 35px;
+        padding:5px;
+        font-size: 20px;
+    }
+</style>
+
+<div>
+	<div style="background:#D4CCCC; width: 38vw; border-radius: 40px; min-height: 65vh; margin-left: 4vw; text-align: center;">
+		{% if datos %}
+			<div class="alert alert-danger" role="alert">
+				{{datos.message}}
+			</div>
+		{% endif %}
+
+		<h1>Recuperar contraseña</h1>
+
+
+		<img  style = "width: 250px; height: 250px; margin-bottom: 10%;" src="{% static 'images/logo.png' %}">
+		<br></br>
+		<h3>Ingrese el correo electrónico con
+			el que se registró para 
+			recuperar su contraseña. </h3>
+		<form class="login-form" method="post">
+			{% csrf_token %}
+			{{form.email}}
+			<button>Enviar</button>
+		
+		</form>
+	</div>
+</div>
+
+<script>
+	document.getElementById('id_email').placeholder="Correo";
+
+
+</script>
+{% endblock %}
+

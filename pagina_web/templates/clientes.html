@@ -1,0 +1,150 @@
+{% extends 'layouts/navbar.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/clientes.css' %}">
+
+<body>
+    <div class="page" >
+        <div class="contenido">
+            <br>
+            <br>
+            
+            <label style="font-size: 25px;margin-left: 5%;">Clientes registrados</label> 
+
+            <br>
+            <br>
+
+            <table id="miTabla">
+                <thead>
+                    <tr>
+                        <th >Nombre</th>
+                        <th >Apellido</th>
+                        <th >RFC</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaBody">
+                                    
+                    {% for item in Clientes %}
+
+                        <tr>
+                            
+                            <th>{{item.nombre}}</th>
+                            <th>{{item.apellido}}</th>
+                            <th>{{item.rfc}}</th>
+                            <th><button onclick="editar_cliente('{{item.nombre}}','{{item.apellido}}', '{{item.rfc}}', '{{item.id}}')">Editar</button></th>
+                        </tr>
+
+                        
+
+                    
+                    {% endfor %}
+                  
+                </tbody>
+            </table>
+        </div>
+
+
+
+        <div class="agregar_usuario">
+            <br>
+            <br>
+
+            <div style="margin-left:5%;">
+                
+                <label for="nombre" style="font-size: 25px;">Agregar nuevo cliente</label> 
+                            
+                <br>
+                <br>
+                
+                <input name="nombre" id="nombre" class="input" placeholder="Nombre" type="input" required>
+                <input name="apellido" id="apellido" class="input" placeholder="Apellido" type="input" required>
+                <input name="rfc" id="rfc" class="input" placeholder="RFC" type="input" required>
+                
+                <br>
+                <br>
+                <button id="guardar" style="color: white; background-color: black; padding: 5px 10px; border-radius: 20px; margin-top: 10px; font-size: 25px;" >Registrar cliente</button>
+                
+                <br>
+                <br>
+
+
+                {% if Error %}
+                <center>
+                    <div class="alerta fracaso" style="margin-right: 5%;" >
+                        {{Error}}
+                    </div>
+                </center>
+                
+                {% endif %}
+
+
+                {% if Exito %}
+                <center>
+                    <div class="alerta exito" style="margin-right: 5%;">
+                        {{Exito}}
+                    </div>
+                </center>
+                {% endif %}
+                </div>
+
+
+            
+
+        </div>
+    </div>
+
+
+
+    <dialog id="dialog_editar_cliente">
+        <form method="POST" action="{% url 'clientes' %}">
+            {% csrf_token %}
+            <input type="hidden" name="_put" value="PUT">
+            <input type="hidden" name="id" id="id" value="0">
+           
+            <p>Ingresa los datos del cliente (Asegurate de no repertir RFC con el de otro cliente registrado)</p>
+            <label>Nombre</label>
+            <input type="text" required name="nombre" id="nombre"/>
+
+            <label>Apellido</label>
+            <input type="text" required name="apellido" id="apellido"/>
+            
+            <label>RFC</label>
+            <input type="text" required name="rfc" id="rfc"/>
+            <br>
+            <br>
+            <button >Editar</button>
+
+        </form>
+        <br>
+        <br>
+        
+        <button onClick="this.parentElement.close()" type="button" >Cerrar</button>
+    
+    </dialog>
+    
+</body>
+
+<script>
+
+    //funcion para editar un cliente
+    function editar_cliente (nombre,apellido, rfc, id) {
+        const alertDialog = document.querySelector("#dialog_editar_cliente");
+        // Obtiene el input dentro del diálogo por su selector
+        const nombre_input = alertDialog.querySelector("#nombre");
+        const apellido_input = alertDialog.querySelector("#apellido");
+        const rfc_input= alertDialog.querySelector("#rfc");
+        const id_input = alertDialog.querySelector("#id")
+
+        // Cambia el valor del input
+        nombre_input.value = nombre;
+        apellido_input.value = apellido;
+        rfc_input.value=rfc;
+        id_input.value=id;
+
+        alertDialog.showModal();
+    };
+
+</script>
+{% endblock %}

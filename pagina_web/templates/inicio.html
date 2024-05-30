@@ -1,0 +1,68 @@
+{% extends 'layouts/nav_inicio.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/inicio.css' %}">
+
+<body>
+    <br>
+    <br>
+    <div class="Contenedor_informacion">
+
+        <div style="float:left;" class="Contenedor_triple"> 
+            <br>
+            <br>
+            <img id="imagen1" class="img" src="{% static 'images/inicio_1.png' %}" onmouseover="Cambiar_imagen1()" onmouseout="Restaurar_imagen1()">
+            <br>
+            <center><h1 style="color:white">Cargar tus <br> archivos XML</h1> </center>
+        </div>
+
+        <div style="float:left;" class="Contenedor_triple">
+            <br>
+            <br>
+            <img  id="imagen2" class="img"  src="{% static 'images/inicio_2.png' %}" onmouseover="Cambiar_imagen2()" onmouseout="Restaurar_imagen2()">
+            <br>
+            <center><h1 style="color:white">Visualiza tu <br> informacion</h1> </center>
+        </div>
+
+        <div style="float:left;" class="Contenedor_triple">
+            <br>
+            <br>
+            <img id="imagen3" class="img"  src="{% static 'images/inicio_3.png' %}" onmouseover="Cambiar_imagen3()" onmouseout="Restaurar_imagen3()">
+            <br>
+            <center><h1 style="color:white">Descarga el <br> reporte</h1> </center>
+        </div>
+
+
+
+    </div>
+</body>
+
+<script>
+    function Cambiar_imagen1() {
+        document.getElementById("imagen1").src= "{% static 'images/inicio_1_color.png' %}";
+    }
+
+    function Restaurar_imagen1() {
+        document.getElementById("imagen1").src= "{% static 'images/inicio_1.png' %}";
+    }
+
+    function Cambiar_imagen2() {
+        document.getElementById("imagen2").src= "{% static 'images/inicio_2_color.png' %}";
+    }
+
+    function Restaurar_imagen2() {
+        document.getElementById("imagen2").src= "{% static 'images/inicio_2.png' %}";
+    }
+
+    function Cambiar_imagen3() {
+        document.getElementById("imagen3").src= "{% static 'images/inicio_3_color.png' %}";
+    }
+
+    function Restaurar_imagen3() {
+        document.getElementById("imagen3").src= "{% static 'images/inicio_3.png' %}";
+    }
+</script>
+
+
+{% endblock %}

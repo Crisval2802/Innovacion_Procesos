@@ -1,0 +1,462 @@
+{% extends 'layouts/navbar.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<!--COMENTARIO-->
+<div class="barra">
+    <h4 style="display: inline-block; margin-right: 10px;">{{Usuario}}</h4>
+    <img src="{% static 'images/avatar.png' %}" alt="Usuario" style="width: 24px;">
+    
+</div>
+<div class="page">
+
+    <!-- Lista para pasarla a javascript y poder ordenarla -->
+    <div id="datos-xml-list" style="display: none;">
+        {{ datos_xml_list|json_script }}
+    </div>
+
+    <div class="form">
+        <button id="subir" onclick="mostrar('form-update')">Cargar archivos</button>
+
+        {% if datos_xml_list %}
+            <form action="{% url 'home' %}">
+                <button id="borrar">Borrar</button>
+            </form>
+            <button id="descargar">Descargar resumen de IVA</button>
+        {% endif %}
+
+    </div>
+
+    {% if datos_xml_list %}
+        <br>
+        <br>
+        <div class="form">
+            <strong><label style="font-size: 20px;">Tipo de factura:</label> </strong>
+
+            <div class="radio-button-wrapper">
+                <input type="radio" id="ingreso" name="tipo" value="ingreso" checked />
+                <label for="ingreso" >Receptor</label>
+            </div>
+
+            
+            <div class="radio-button-wrapper">
+                <input type="radio" id="gasto" name="tipo" value="gasto" checked />
+                <label for="gasto">Emisor</label>
+            </div>
+
+            
+            <label style="font-size: 25px;">|</label>
+
+            <strong><label style="font-size: 20px;">Cliente:</label></strong>
+
+            <select name="cliente" id="cliente" style="font-size: 16px;">
+                <option disabled>Ningun cliente seleccionado</option>
+                {% for item in Clientes %}
+                    <option value="{{item.rfc}}">{{item.nombre}} {{item.apellido}}({{item.rfc}})</option>    
+                {% endfor %}
+    
+
+            </select>
+
+            <button id="filtrar">Filtrar</button>
+
+            <button id="quitar_filtro" onclick="quitar_filtro()">Quitar filtro</button>
+
+            
+            <button id="registrar" class="registrar">Realizar registro</button>
+
+        </div>
+    {% endif %}
+   
+    <div class="contenido" >
+        <table id="miTabla" style="font-size: 14px;">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th onclick="ordenar_tabla('fecha')" style="cursor: pointer;">Fecha</th>
+                    <th onclick="ordenar_tabla('folio')" style="cursor: pointer;">Folio</th>
+                    <th onclick="ordenar_tabla('emisor')" style="cursor: pointer;">Emisor RFC</th>
+                    <th onclick="ordenar_tabla('receptor')" style="cursor: pointer;">Receptor RFC</th>
+                    <th onclick="ordenar_tabla('subtotal')" style="cursor: pointer;">Subtotal</th>
+                    <th onclick="ordenar_tabla('iva')" style="cursor: pointer;">IVA</th>
+                    <th onclick="ordenar_tabla('total')" style="cursor: pointer;">Total</th>
+                    
+                    <th>Conceptos</th>
+                    <th>Clave Prod Serv</th>
+                    <th>Cantidad</th>
+                    <th>Clave Unidad</th>
+                    <th>Unidad</th>
+                    <th>Descripción</th>
+                    <th>Valor Unitario</th>
+                    <th>Importe</th>
+
+
+                </tr>
+            </thead>
+            <tbody id="tablaBody">
+               
+            </tbody>
+        </table>
+    </div>
+
+    <form class="form-upload" id="form-update" style="display: none;" method="post" enctype="multipart/form-data" action="{% url 'home' %}">
+        {% csrf_token %}
+        <div class="upload" style="margin-top: 20px;">
+            <label for="archivo">Selecciona uno o más archivos:</label>
+            <input type="file" id="archivo" name="archivo" accept=".xml" multiple>
+            <br>
+            <input type="submit" value="Subir Archivos" style="color: white; background-color: black; padding: 5px 10px; border-radius: 20px; margin-top: 10px;">
+        </div>
+    </form>
+</div>
+
+<script>
+    var lista_filtrada=[];
+    var filtrado=0;
+    document.getElementById("registrar").hidden=true;
+    document.getElementById("quitar_filtro").hidden=true;
+
+    function mostrar(id) {
+        document.getElementById(id).style.display = 'block';
+    }
+    function cerrar(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    //lista de los datos xml en javascript para reordenar
+    var datos_xml_list = JSON.parse(document.getElementById('datos-xml-list').textContent);
+
+    //funcion para mostrar los datos de la lista en la tabla
+    function mostrarDatosEnTabla(lista) {
+        var tablaBody = document.getElementById('tablaBody');
+        tablaBody.innerHTML = ''; // se limpia la tabla antes de agregar datos
+
+        lista.forEach((dato, indice) => {
+            //Se agregan a a la tabla los datos de la lista
+            var tr = document.createElement('tr');
+            var tdFecha = document.createElement('td');
+            tdFecha.textContent = dato.fecha;
+            var tdFolio = document.createElement('td');
+            tdFolio.textContent = dato.folio;
+            var tdEmisorRFC = document.createElement('td');
+            tdEmisorRFC.textContent = dato.emisor_rfc;
+            var tdReceptorRFC = document.createElement('td');
+            tdReceptorRFC.textContent = dato.receptor_rfc;
+            var tdSubtotal = document.createElement('td');
+            tdSubtotal.textContent = dato.subtotal;
+            var tdIVA = document.createElement('td');
+            tdIVA.textContent = dato.iva;
+            var tdTotal = document.createElement('td');
+            tdTotal.textContent = dato.total;
+
+            //Se agrega el checkbox a la izquierda de cada registro
+            const celdaCheckbox = document.createElement('td');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            //Se habilita dependiendo del valor que tenga el registro en la lista
+            checkbox.checked = dato.habilitado;
+            checkbox.addEventListener('change', function() {
+                lista[indice].habilitado = this.checked;
+                console.log(`Registro actualizado:`, lista[indice]);
+            });
+
+            celdaCheckbox.appendChild(checkbox);
+            tr.appendChild(celdaCheckbox);
+
+            tr.appendChild(tdFecha);
+            tr.appendChild(tdFolio);
+            tr.appendChild(tdEmisorRFC);
+            tr.appendChild(tdReceptorRFC);
+            tr.appendChild(tdSubtotal);
+            tr.appendChild(tdIVA);
+            tr.appendChild(tdTotal);
+
+            // se agrega la fila para los conceptos
+            var tdConceptos = document.createElement('td');
+            tdConceptos.textContent = '';
+            tr.appendChild(tdConceptos);
+            tablaBody.appendChild(tr);
+            
+            // se agregan las filas en los conceptos
+            dato.conceptos.forEach(function(concepto) {
+                var conceptoTr = document.createElement('tr');
+                //filas vacias para darle formato
+                var emptyTds = new Array(9).fill('').map(function() {
+                    return document.createElement('td');
+                });
+                conceptoTr.append(...emptyTds);
+
+                var tdClaveProdServ = document.createElement('td');
+                tdClaveProdServ.textContent = concepto.clave_prod_serv;
+                var tdCantidad = document.createElement('td');
+                tdCantidad.textContent = concepto.cantidad;
+                var tdClaveUnidad = document.createElement('td');
+                tdClaveUnidad.textContent = concepto.clave_unidad;
+                var tdUnidad = document.createElement('td');
+                tdUnidad.textContent = concepto.unidad;
+                var tdDescripcion = document.createElement('td');
+                tdDescripcion.textContent = concepto.descripcion;
+                var tdValorUnitario = document.createElement('td');
+                tdValorUnitario.textContent = concepto.valor_unitario;
+                var tdImporte = document.createElement('td');
+                tdImporte.textContent = concepto.importe;
+
+                conceptoTr.appendChild(tdClaveProdServ);
+                conceptoTr.appendChild(tdCantidad);
+                conceptoTr.appendChild(tdClaveUnidad);
+                conceptoTr.appendChild(tdUnidad);
+                conceptoTr.appendChild(tdDescripcion);
+                conceptoTr.appendChild(tdValorUnitario);
+                conceptoTr.appendChild(tdImporte);
+
+                tablaBody.appendChild(conceptoTr);
+            });
+
+
+            
+        });
+    }
+
+    //funciones para ordenar los datos
+    function ordenarAscendente(parametro) {
+        if (filtrado==1){
+            lista_filtrada.sort(function(a, b) {
+                if (parametro=="fecha"){
+                    return new Date(a.fecha) - new Date(b.fecha);
+                }else if (parametro=="folio"){
+                    return parseInt(a.folio) - parseInt(b.folio);
+                }else if (parametro=="emisor"){
+                    return a.emisor_rfc.localeCompare(b.emisor_rfc);
+                }else if (parametro=="receptor"){
+                    return a.receptor_rfc.localeCompare(b.receptor_rfc);
+                }else if (parametro=="subtotal"){
+                    return parseFloat(a.subtotal) - parseFloat(b.subtotal);
+                }else if (parametro=="total"){
+                    return parseFloat(a.total) - parseFloat(b.total);
+                }
+            });
+            mostrarDatosEnTabla(lista_filtrada);
+        }else{
+            datos_xml_list.sort(function(a, b) {
+                if (parametro=="fecha"){
+                    return new Date(a.fecha) - new Date(b.fecha);
+                }else if (parametro=="folio"){
+                    return parseInt(a.folio) - parseInt(b.folio);
+                }else if (parametro=="emisor"){
+                    return a.emisor_rfc.localeCompare(b.emisor_rfc);
+                }else if (parametro=="receptor"){
+                    return a.receptor_rfc.localeCompare(b.receptor_rfc);
+                }else if (parametro=="subtotal"){
+                    return parseFloat(a.subtotal) - parseFloat(b.subtotal);
+                }else if (parametro=="total"){
+                    return parseFloat(a.total) - parseFloat(b.total);
+                }
+            });
+            mostrarDatosEnTabla(datos_xml_list);
+        }
+
+    }
+
+    function ordenarDescendente(parametro) {
+        if (filtrado==1){
+            lista_filtrada.sort(function(a, b) {
+                if (parametro=="fecha"){
+                    return new Date(b.fecha) - new Date(a.fecha);
+                }else if (parametro=="folio"){
+                    return parseInt(b.folio) - parseInt(a.folio);
+                }else if (parametro=="emisor"){
+                    return b.emisor_rfc.localeCompare(a.emisor_rfc);
+                }else if (parametro=="receptor"){
+                    return b.receptor_rfc.localeCompare(a.receptor_rfc);
+                }else if (parametro=="subtotal"){
+                    return parseFloat(b.subtotal) - parseFloat(a.subtotal);
+                }else if (parametro=="total"){
+                    return parseFloat(b.total) - parseFloat(a.total);
+                }
+            });
+            mostrarDatosEnTabla(lista_filtrada);
+        }else{
+            datos_xml_list.sort(function(a, b) {
+                if (parametro=="fecha"){
+                    return new Date(b.fecha) - new Date(a.fecha);
+                }else if (parametro=="folio"){
+                    return parseInt(b.folio) - parseInt(a.folio);
+                }else if (parametro=="emisor"){
+                    return b.emisor_rfc.localeCompare(a.emisor_rfc);
+                }else if (parametro=="receptor"){
+                    return b.receptor_rfc.localeCompare(a.receptor_rfc);
+                }else if (parametro=="subtotal"){
+                    return parseFloat(b.subtotal) - parseFloat(a.subtotal);
+                }else if (parametro=="total"){
+                    return parseFloat(b.total) - parseFloat(a.total);
+                }
+            });
+            mostrarDatosEnTabla(datos_xml_list);
+        }
+
+    }
+
+    //variable para definir en que orden esta
+    var ordenAscendente = true;
+
+    //funcion para ordenar la tabla en modo ascendente o descendente
+    function ordenar_tabla(parametro){
+        if (ordenAscendente) {
+            ordenarDescendente(parametro);
+            ordenAscendente = false;
+        } else {
+            ordenarAscendente(parametro);
+            ordenAscendente = true;
+        }
+    }
+
+    mostrarDatosEnTabla(datos_xml_list);
+
+    //Funcion para calcular el periodo en meses entre la primera y ultima fecha de los xml leidos
+    function calcularPeriodoEnMeses(fechaInicio, fechaFin) {
+        const inicio = new Date(fechaInicio);
+        const fin = new Date(fechaFin);
+        const diferenciaEnMilisegundos = fin - inicio;
+        const meses = diferenciaEnMilisegundos / (1000 * 60 * 60 * 24 * 30); 
+        return Math.round(meses);
+    }
+
+    $(document).ready(function() {
+        
+            // Click en el boton descargar
+            $("#descargar").click(function() {
+                // Se mandan los datos a la vista
+                //Si se uso un filtro se manda la listra filtrada, sino se manda la lista normal
+                if (filtrado==1){
+                    $.ajax({
+                        url: '/resumen',
+                        method: 'POST',
+                        headers: {'X-CSRFToken': '{{ csrf_token }}' },
+                        data: { datos: JSON.stringify(lista_filtrada) },  // Se manda el arreglo de datos
+                        success: function(response) {
+                            // Se convierte la respuesta en un Blob para quegerar el pdf
+                            var blob = new Blob([response], { type: 'application/octet-stream' });
+
+                            // Se crea una url
+                            var url = URL.createObjectURL(blob);
+
+                            // Se genera un enlace y se simula un click
+                            var a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'Resumen_IVA.pdf';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        },
+                        error: function(xhr, errmsg, err) {
+                            console.log(xhr.status + ": " + xhr.responseText);
+                        }
+                    });
+                }else{
+                    $.ajax({
+                        url: '/resumen',
+                        method: 'POST',
+                        headers: {'X-CSRFToken': '{{ csrf_token }}' },
+                        data: { datos: JSON.stringify(datos_xml_list) },  // Se manda el arreglo de datos
+                        success: function(response) {
+                            // Se convierte la respuesta en un Blob para quegerar el pdf
+                            var blob = new Blob([response], { type: 'application/octet-stream' });
+
+                            // Se crea una url
+                            var url = URL.createObjectURL(blob);
+
+                            // Se genera un enlace y se simula un click
+                            var a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'Resumen_IVA.pdf';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        },
+                        error: function(xhr, errmsg, err) {
+                            console.log(xhr.status + ": " + xhr.responseText);
+                        }
+                    });
+                }
+                
+            });
+
+             // Click en el boton registrar
+            $("#filtrar").click(function() {
+                select = document.querySelector("#cliente");
+                if(!select.value){
+                    alert("No elegiste ningun cliente");
+                }else{
+                    filtrado=1;
+                    
+                    tipo=document.querySelector('input[name="tipo"]:checked').value;
+                    lista_filtrada.length=0;
+                    if (tipo=="gasto"){
+                        for (let i=0; i<datos_xml_list.length; i++){
+                            if (datos_xml_list[i].emisor_rfc==select.value){
+                                lista_filtrada.push(datos_xml_list[i]);
+                            }
+                        }
+                        //console.log(lista_filtrada);
+                    }else{
+                        for (let i=0; i<datos_xml_list.length; i++){
+                            if (datos_xml_list[i].receptor_rfc==select.value){
+                                lista_filtrada.push(datos_xml_list[i]);
+                            }
+                        }
+                        //console.log(lista_filtrada);
+                    }
+                    mostrarDatosEnTabla(lista_filtrada);
+                    if (lista_filtrada.length!=0){
+                        document.getElementById("registrar").hidden=false;
+                    }else{
+                        document.getElementById("registrar").hidden=true;
+                    }
+                    document.getElementById("quitar_filtro").hidden=false;
+                }
+                
+            });
+
+             // Click en el boton registrar
+             $("#registrar").click(function() {
+                select = document.querySelector("#cliente");
+                if(!select.value){
+                    alert("No elegiste ningun cliente");
+                }else{
+                    tipo=document.querySelector('input[name="tipo"]:checked').value;
+                    // Se mandan los datos a la vista
+
+                    $.ajax({
+                        url: '/registros',
+                        method: 'POST',
+                        headers: {'X-CSRFToken': '{{ csrf_token }}' },
+                        data: { datos: JSON.stringify(lista_filtrada), cliente:select.value, tipo:tipo },  // Se manda el arreglo de datos
+                        success: function(response) {
+                            alert(response.Message);
+
+                        },
+                        error: function(xhr, errmsg, err) {
+                            console.log(xhr.status + ": " + xhr.responseText);
+                        }
+                    });
+
+
+                }
+                
+            });
+    });
+    
+    //funcion para quitar el filtro de la lista y vovler a mostrar la original
+    function quitar_filtro(){
+        lista_filtrada.length=0;
+        filtrado=0;
+        document.getElementById("quitar_filtro").hidden=true;
+        document.getElementById("registrar").hidden=true;
+        mostrarDatosEnTabla(datos_xml_list);
+    }
+
+   
+</script>
+
+{% endblock %}

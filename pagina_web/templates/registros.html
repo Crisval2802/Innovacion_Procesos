@@ -1,0 +1,104 @@
+{% extends 'layouts/navbar.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/registros.css' %}">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<body>
+    <div class="page" >
+        <div class="contenido">
+            <br>
+            <br>
+            <div style="margin-left:5%;">
+                    
+                <label for="nombre" style="font-size: 25px;">Registros</label> 
+
+                <br>
+                <br>
+
+                <table id="miTabla">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Tipo</th>
+                            <th>Subtotal</th>
+                            <th>IVA</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                                        
+                        {% for item in entity %}
+    
+                            <tr>
+                                <th>{{item.fecha}}</th>
+                                <th>{{item.id_cliente.nombre}} {{item.id_cliente.apellido}}({{item.id_cliente.rfc}})</th>
+                                {% if item.tipo == False %}
+                                    <th>Receptor</th>
+                                {% else %}
+                                    <th>Emisor</th>
+                                {% endif %}
+                                <th>${{item.subtotal|floatformat:2}}</th>
+                                <th>${{item.iva|floatformat:2}}</th>
+                                <th>${{item.total|floatformat:2}}</th>
+                                <th><button name="ver_reporte" id="ver_reporte" onclick="ver_reporte('{{item.id}}')">Ver reporte</button></th>
+                            </tr>
+    
+                            
+    
+                        
+                        {% endfor %}
+                      
+                    </tbody>
+                </table>
+
+            </div>
+
+            <br>
+            <br>
+            <br>
+
+            <div>
+                {% include 'layouts/paginator.html' %}
+            </div>
+        </div>
+
+    </div>
+
+
+
+   
+    
+</body>
+
+<script>
+    function ver_reporte(id){
+        $.ajax({
+            url: '/reporte_registro',
+            method: 'POST',
+            headers: {'X-CSRFToken': '{{ csrf_token }}' },
+            data: { id:id },  // Se manda el arreglo de datos
+            success: function(response) {
+                // Se convierte la respuesta en un Blob para quegerar el pdf
+                var blob = new Blob([response], { type: 'application/octet-stream' });
+
+                // Se crea una url
+                var url = URL.createObjectURL(blob);
+
+                // Se genera un enlace y se simula un click
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'Reporte_IVA.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            },
+            error: function(xhr, errmsg, err) {
+                console.log(xhr.status + ": " + xhr.responseText);
+            }
+        });
+    }
+</script>
+{% endblock %}

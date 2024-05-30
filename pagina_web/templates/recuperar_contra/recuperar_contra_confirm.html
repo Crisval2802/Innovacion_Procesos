@@ -1,0 +1,65 @@
+{% extends 'layouts/nav_login.html' %}
+{% load static %}
+{% block content %}
+
+{% if validlink %}
+<style>
+    input{
+        margin-bottom: 10px;
+        width: 80%;
+        min-height: 40px;
+        border-radius: 35px;
+        padding:5px;
+        font-size: 20px;
+    }
+</style>
+
+<div class="login-page">
+	<div style="background:#D4CCCC; width: 38vw; border-radius: 40px; min-height: 65vh; margin-left: 4vw; text-align: center;">
+
+		{% if datos %}
+			<div class="alert alert-danger" role="alert">
+				{{datos.message}}
+			</div>
+		{% endif %}
+
+		<strong><h1>Nueva contraseña</h1></strong>
+		<img  style = "width: 250px; height: 250px; margin-bottom: 10%;" src="{% static 'images/logo.png' %}">
+
+		<form class="login-form" method="post" >
+			
+			{% csrf_token %}
+
+
+            {{form.new_password1}}
+			
+            {% if form.new_password2.errors %}
+			<div class="alert alert-danger" role="alert">
+				{{form.new_password2.errors}}
+			</div>
+			{% endif %}
+ 
+            {{form.new_password2}}
+
+			<br>
+            <button>Entrar</button>
+
+		</form>
+	</div>
+</div>
+
+
+<script>
+	document.getElementById('id_new_password1').placeholder="Nueva contraseña";
+	document.getElementById('id_new_password2').placeholder="Confirmar contraseña";
+
+</script>
+
+
+{% else %}
+
+<h1>Enlace Invalido, ya ha sido utilizado</h1>
+
+{% endif %}
+
+{% endblock %}
